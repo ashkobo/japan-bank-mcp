@@ -29,9 +29,6 @@ for (let c = 0xff66; c <= 0xff9f; c++) {
   HALF.set(half.normalize("NFKC"), half);
 }
 
-// PUBLIC
-// ---------------------------------------------------------------------------
-
 export function hiraganaToKatakana(text) {
   return text.replace(/[ぁ-ゖ]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60));
 }
