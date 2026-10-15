@@ -65,14 +65,31 @@ Each result carries `dataAsOf`, the date of the bank code data it was built from
 
 ## As a library
 
+<!-- readme-trial: library -->
 ```js
+import assert from "node:assert/strict";
 import { findBranches, searchBanks, toZenginName, yuchoToBank } from "japan-bank-mcp";
 
-searchBanks("じょうなんしんきん").results[0].code;  // "1344"
-findBranches("0005", "本店").results[0].code;       // "001"
-toZenginName("株式会社ヤマダショウジ").name;         // "ｶ)ﾔﾏﾀﾞｼﾖｳｼﾞ"
-yuchoToBank("11940", "12345671").accountNumber;     // "1234567"
+assert.equal(searchBanks("じょうなんしんきん").results[0].code, "1344");
+assert.equal(findBranches("0005", "本店").results[0].code, "001");
+assert.equal(toZenginName("株式会社ヤマダショウジ").name, "ｶ)ﾔﾏﾀﾞｼﾖｳｼﾞ");
+assert.equal(yuchoToBank("11940", "12345671").accountNumber, "1234567");
 ```
+
+## Try preparing a transfer
+
+Ask the connected agent to "Normalize 株式会社ヤマダショウジ for a Japanese bank transfer."
+`japan_bank_account_name` should return `ｶ)ﾔﾏﾀﾞｼﾖｳｼﾞ` and any applicable warnings.
+From a source checkout, `npm run demo` checks bank/branch lookup, this name and the ゆうちょ
+example, then prints the conversion results.
+
+Use this when an agent needs name-tolerant search plus kana and ゆうちょ conversion offline.
+If your code only needs the raw dictionary, [zengin-code](https://github.com/zengin-code/zengin-js)
+may be sufficient. This server adds the search and conversion interfaces; it does not
+independently verify the source dictionary or confirm that an account exists.
+For an actual transfer, confirm the destination with the holder and the receiving bank.
+Inspect `total`, match quality, warnings and `dataAsOf`; avoid automatically choosing the first
+result from an ambiguous bank or branch name. It never sends a payment.
 
 ## Data
 
@@ -93,3 +110,16 @@ AI エージェントに金融機関コード簿を渡す MCP サーバーです
 ## License
 
 MIT. The bank code data is from zengin-code (MIT).
+
+## Verify and maintain
+
+`npm run verify:package` checks a real tarball in a fresh consumer and calls its MCP server.
+`npm run data:check` validates bank/branch codes, references and the bundled license.
+`npm run data:status` compares its source date with the latest zengin-code npm version without
+modifying files. A weekly Data freshness workflow runs the same check after it is pushed.
+See [MAINTENANCE.md](MAINTENANCE.md) for source updates, comparison and release steps.
+
+If tools do not appear, verify Node.js 18+, check the client's configuration and restart it.
+For an unknown branch, try its code and check the data date. Kanji personal names are not
+transliterated; supply the holder's confirmed kana reading. An installed package does not
+refresh its bank data automatically.
